@@ -55,6 +55,7 @@ def check_play_button(ai_settings,screen,stats,sb,play_button,ship,aliens,bullet
         sb.prep_score()
         sb.prep_high_score()
         sb.prep_level()
+        sb.prep_ships()
 
         #清空外星人列表和子弹列表
         aliens.empty()
@@ -131,13 +132,13 @@ def change_fleet_direction(ai_settings,aliens):
         alien.rect.y += ai_settings.fleet_drop_speed
     ai_settings.fleet_direction *= -1
 
-def check_aliens_bottom(ai_settings, stats, screen, ship, aliens, bullets):
+def check_aliens_bottom(ai_settings, stats, sb,screen, ship, aliens, bullets):
     """检查是否有外星人到达了屏幕底端"""
     screen_rect = screen.get_rect()
     for alien in aliens.sprites():
         if alien.rect.bottom >= screen_rect.bottom:
             # 像飞船别撞到一样处理
-            ship_hit(ai_settings, stats, screen, ship, aliens, bullets)
+            ship_hit(ai_settings, stats, sb,screen, ship, aliens, bullets)
             break
 
 def check_high_score(stats, sb):
@@ -146,12 +147,14 @@ def check_high_score(stats, sb):
         stats.high_score = stats.score
         sb.prep_high_score()
 
-def ship_hit(ai_settings, stats, screen, ship, aliens, bullets):
+def ship_hit(ai_settings, stats, sb,screen, ship, aliens, bullets):
     """响应被外星人装到的飞船"""
 
     if stats.ships_left > 0:
         # 将 ships_left 减1
         stats.ships_left -= 1
+        # 更新记分牌
+        sb.prep_ships()
         # 清空外星人列表和子弹列表
         aliens.empty()
         bullets.empty()
@@ -164,15 +167,16 @@ def ship_hit(ai_settings, stats, screen, ship, aliens, bullets):
         stats.game_active = False
         pygame.mouse.set_visible(True)
 
-def update_aliens(ai_settings,stats,screen,ship,aliens,bullets):
+def update_aliens(ai_settings,stats,sb,screen,ship,aliens,bullets):
     """检查外星人是否位于窗口边缘，更新外星人群中所有外星人的位置"""
     check_fleet_edges(ai_settings,aliens)
     aliens.update()
+    # 检测外星人与飞船直接的碰撞
     if pygame.sprite.spritecollideany(ship,aliens):
         #print("Ship hit!!!")
-        ship_hit(ai_settings,stats,screen,ship,aliens,bullets)
+        ship_hit(ai_settings,stats,sb,screen,ship,aliens,bullets)
     # 检查外星人是否到达屏幕底端
-    check_aliens_bottom(ai_settings, stats, screen, ship, aliens, bullets)
+    check_aliens_bottom(ai_settings, stats,sb, screen, ship, aliens, bullets)
 
 def create_alien(ai_settings,screen,aliens,alien_number,row_number):
     # 创建一个外星人，并将其加入当前行
